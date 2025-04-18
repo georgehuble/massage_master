@@ -1,8 +1,7 @@
-# API_TOKEN = "7809733540:AAFCaap7XQh9KwfjYFNp56VxWHdpqd89VdM"
-
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import CommandStart
+import os
 from fastapi import FastAPI
 import uvicorn
 import asyncio
@@ -11,9 +10,8 @@ from datetime import datetime, timedelta
 from calendar_utils import get_calendar_service, create_event, get_busy_slots_for_day
 from aiogram.types import WebAppInfo
 
-
-API_TOKEN = "7809733540:AAFCaap7XQh9KwfjYFNp56VxWHdpqd89VdM"
-CALENDAR_ID = "86c85f30ee76c7ff0761de505f603030d88602df24f0cd91dc751859117b0aab@group.calendar.google.com"
+API_TOKEN = os.getenv("BOT_TOKEN")
+CALENDAR_ID = os.getenv("CALENDAR_ID")
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -28,7 +26,7 @@ async def send_welcome(message: types.Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
             text="📅 Записаться через WebApp",
-            web_app=WebAppInfo(url="https://5c56-62-60-239-222.ngrok-free.app/")  # твой фронт
+            web_app=WebAppInfo(url="https://filed-body-circuits-republic.trycloudflare.com")
         )]
     ])
     await message.answer("Добро пожаловать! Запишитесь на массаж через удобный календарь:", reply_markup=keyboard)
