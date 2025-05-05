@@ -1,1 +1,1 @@
-cloudflared.exe tunnel --url http://localhost:8000
+cloudflared tunnel run my-tunnel

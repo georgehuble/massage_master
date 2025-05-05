@@ -1,14 +1,13 @@
 from aiogram import Bot, Dispatcher, types, F
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 from aiogram.filters import CommandStart
 import os
 from fastapi import FastAPI
-import uvicorn
 import asyncio
+import json
 from datetime import datetime, timedelta
 
 from calendar_utils import get_calendar_service, create_event, get_busy_slots_for_day
-from aiogram.types import WebAppInfo
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 CALENDAR_ID = os.getenv("CALENDAR_ID")
@@ -23,37 +22,40 @@ USER_STATE = {}
 
 @dp.message(CommandStart())
 async def send_welcome(message: types.Message):
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(
-            text="📅 Записаться через WebApp",
-            web_app=WebAppInfo(url="https://filed-body-circuits-republic.trycloudflare.com")
-        )]
-    ])
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(
+                text="📅 Записаться через WebApp",
+                web_app=WebAppInfo(url="https://app.selesta-test.ru?tgWebAppDebug=1")
+            )]
+        ],
+        resize_keyboard=True
+    )
     await message.answer("Добро пожаловать! Запишитесь на массаж через удобный календарь:", reply_markup=keyboard)
 
 
 @dp.message(F.web_app_data)
 async def handle_webapp_data(message: types.Message):
-    selected_time = datetime.fromisoformat(message.web_app_data.data)
-    now = datetime.utcnow() + timedelta(hours=3)  # учёт московского времени
+    try:
+        # Парсим данные из WebApp
+        data = json.loads(message.web_app_data.data)
+        selected_time = datetime.fromisoformat(data['slot'])
+        # Всегда берём настоящее имя из Telegram
+        user_name = message.from_user.full_name
+    except (json.JSONDecodeError, KeyError):
+        # Старый формат — только ISO-строка без JSON
+        try:
+            selected_time = datetime.fromisoformat(message.web_app_data.data)
+            user_name = message.from_user.full_name
+        except ValueError:
+            await message.answer("Ошибка в формате данных. Пожалуйста, попробуйте ещё раз.")
+            return
 
-    # Проверка правил
-    if selected_time < now + timedelta(hours=4):
-        await message.answer("Вы не можете записаться менее чем за 4 часа.")
-        return
+    # Здесь ваша логика сохранения записи:
+    # например, сохраняем в базу: save_booking(user_name, selected_time, ...)
+    # и отправляем подтверждение клиенту и уведомление администратору
 
-    if selected_time > now + timedelta(days=14):
-        await message.answer("Нельзя записываться более чем на 2 недели вперёд.")
-        return
-
-    service = get_calendar_service()
-    busy = get_busy_slots_for_day(service, selected_time.date())
-    if selected_time in busy:
-        await message.answer("Это время уже занято.")
-        return
-
-    link = create_event(selected_time, message.from_user.full_name)
-    await message.answer(f"✅ Вы записаны на {selected_time.strftime('%d.%m %H:%M')}!\n\n📅 {link}")
+    await message.answer(f"Спасибо, {user_name}! Ваша запись на {selected_time.strftime('%d.%m.%Y %H:%M')} подтверждена.")
 
 
 async def main():
