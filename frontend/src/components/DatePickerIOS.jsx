@@ -7,6 +7,15 @@ const months = [
   'сентября', 'октября', 'ноября', 'декабря'
 ];
 
+const weekdays = [
+  'воскресенье', 'понедельник', 'вторник', 'среда',
+  'четверг', 'пятница', 'суббота'
+];
+
+const weekdaysShort = [
+  'вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'
+];
+
 // Сгенерировать массив из 14 допустимых дат (с сегодняшнего дня)
 const generateAllowedDates = () => {
   const now = new Date();
@@ -28,7 +37,24 @@ const formatDateLabel = (date) => {
   const day = date.getDate();
   const month = months[date.getMonth()];
   const year = date.getFullYear();
-  return `${day} ${month} ${year} г.`;
+  const weekday = weekdays[date.getDay()];
+  
+  // Определяем если это сегодня или завтра
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  
+  const dateToCheck = new Date(date);
+  dateToCheck.setHours(0, 0, 0, 0);
+  
+  if (dateToCheck.getTime() === today.getTime()) {
+    return `Сегодня, ${day} ${month}`;
+  } else if (dateToCheck.getTime() === tomorrow.getTime()) {
+    return `Завтра, ${day} ${month}`;
+  } else {
+    return `${weekday}, ${day} ${month}`;
+  }
 };
 
 const DatePickerIOS = ({ value, onChange }) => {
@@ -55,9 +81,13 @@ const DatePickerIOS = ({ value, onChange }) => {
     <div className="w-full flex justify-center">
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full bg-green-500 text-white py-3 rounded-lg shadow hover:bg-green-600 transition duration-200 ease-in-out"
+        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 ease-out font-medium text-lg relative overflow-hidden"
       >
-        {value ? formatDateLabel(value) : 'Выберите дату'}
+        <div className="relative z-10 flex items-center justify-center space-x-2">
+          <span className="text-xl">📅</span>
+          <span>{value ? formatDateLabel(value) : 'Выберите дату'}</span>
+        </div>
+        <div className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
       </button>
       <style>{`
         .datepicker.ios {

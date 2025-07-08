@@ -13,15 +13,41 @@ def get_calendar_service():
     service = build("calendar", "v3", credentials=credentials)
     return service
 
-def create_event(start_time: datetime, user_name: str):
+def create_event(name: str, start_time: datetime, end_time: datetime = None, massage_type: str = "Массаж", description: str = ""):
     service = get_calendar_service()
+    
+    # Если end_time не указано, используем стандартную длительность в 1 час
+    if end_time is None:
+        end_time = start_time + timedelta(hours=1)
+    
     event = {
-        "summary": f"Массаж для {user_name}",
-        "start": {"dateTime": start_time.isoformat(), "timeZone": "Europe/Moscow"},
-        "end": {"dateTime": (start_time + timedelta(hours=1)).isoformat(), "timeZone": "Europe/Moscow"},
+        "summary": f"{massage_type} - {name}",
+        "description": description,
+        "start": {
+            "dateTime": start_time.isoformat(), 
+            "timeZone": "Europe/Moscow"
+        },
+        "end": {
+            "dateTime": end_time.isoformat(), 
+            "timeZone": "Europe/Moscow"
+        },
+        "reminders": {
+            "useDefault": False,
+            "overrides": [
+                {"method": "popup", "minutes": 60},  # Напоминание за час
+                {"method": "popup", "minutes": 15},  # Напоминание за 15 минут
+            ],
+        },
+        "colorId": "2"  # Зеленый цвет для массажных сессий
     }
-    created_event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
-    return created_event.get("htmlLink")
+    
+    try:
+        created_event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
+        print(f"✅ Событие создано: {created_event.get('htmlLink')}")
+        return created_event.get("htmlLink")
+    except Exception as e:
+        print(f"❌ Ошибка создания события в календаре: {e}")
+        raise e
 
 def get_busy_slots_for_day(service, day: datetime.date):
     start = datetime.combine(day, datetime.min.time()).isoformat() + "Z"
