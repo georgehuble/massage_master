@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
 import { API_ENDPOINTS, BOOKING_COOLDOWN, DEFAULT_USER_NAME } from '../constants';
 
 export const useBooking = (tg, userName, refetchSlots) => {
@@ -69,7 +68,6 @@ export const useBooking = (tg, userName, refetchSlots) => {
           }
         }
         
-        toast.success("Вы успешно записаны!");
         setIsBlocked(true);
         setCountdown(15);
 
@@ -84,11 +82,9 @@ export const useBooking = (tg, userName, refetchSlots) => {
           });
         }, 1000);
         await refetchSlots();
-      } else {
-        toast.error("Ошибка: " + (data.detail || "Не удалось"));
       }
     } catch (error) {
-      toast.error("Ошибка соединения: " + error.message);
+      console.error("Ошибка соединения:", error.message);
     } finally {
       setIsLoadingUI(false);
     }
@@ -108,15 +104,14 @@ export const useBooking = (tg, userName, refetchSlots) => {
           d => new Date(d).getTime() !== new Date(selectedSlot).getTime()
         );
         setConfirmedBookings(updated);
-        toast.success("Запись успешно отменена!");
         localStorage.setItem("confirmedBookings", JSON.stringify(updated));
         await refetchSlots();
       } else {
         const errorData = await response.json();
-        toast.error("Не удалось отменить запись. Попробуйте позже.");
+        console.error("Не удалось отменить запись:", errorData);
       }
     } catch (error) {
-      toast.error("Ошибка соединения. Попробуйте позже.");
+      console.error("Ошибка соединения:", error);
     } finally {
       setIsLoadingUI(false);
     }

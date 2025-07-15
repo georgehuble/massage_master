@@ -21,28 +21,36 @@ app.add_middleware(
 )
 
 @app.get("/api/slots")
-async def slots(day: str = Query(..., example="2025-04-10")):
+async def slots(
+    day: str = Query(..., example="2025-04-10"),
+    massageType: str = Query("classic", description="Тип массажа"),
+    duration: int = Query(60, description="Длительность в минутах")
+):
     try:
         date_obj = datetime.strptime(day, "%Y-%m-%d")
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format")
-    slots = get_available_slots(date_obj)
+    slots = get_available_slots(date_obj, massageType, duration)
     return slots
 
 class BookingRequest(BaseModel):
     name: str
     slot: str  # ISO format
+    massageType: str = "classic"  # тип массажа
+    duration: int = 60  # длительность в минутах
 
 @app.post("/api/book")
 async def book(request: BookingRequest = Body(...)):
-    success = book_slot(request.name, request.slot)
+    success, event_id = book_slot(request.name, request.slot, request.massageType, request.duration)
     if not success:
         raise HTTPException(status_code=409, detail="Слот уже занят. Выберите другое время.")
-    return {"success": True}
+    return {"success": True, "eventId": event_id}
 
 @app.post("/api/cancel")
 async def cancel(request: BookingRequest = Body(...)):
-    success = cancel_slot(request.name, request.slot)
+    # eventId теперь может быть в теле запроса
+    event_id = getattr(request, 'eventId', None) or (request.dict().get('eventId'))
+    success = cancel_slot(event_id, request.name, request.slot, request.massageType)
     if not success:
         raise HTTPException(status_code=404, detail="Событие не найдено или уже отменено")
     return {"success": True}

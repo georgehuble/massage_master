@@ -28,33 +28,7 @@ MASSAGE_TYPES = {
 
 @dp.message(CommandStart())
 async def send_welcome(message: types.Message):
-    # Проверяем, является ли пользователь администратором
-    is_admin = str(message.from_user.id) == str(ADMIN_ID)
-    
-    if is_admin:
-        keyboard = ReplyKeyboardMarkup(
-            keyboard=[
-                [KeyboardButton(
-                    text="📅 Записаться через WebApp",
-                    web_app=WebAppInfo(url="https://app.selesta-test.ru?tgWebAppDebug=1")
-                )],
-                [KeyboardButton(text="📊 Статистика"), KeyboardButton(text="📋 Сегодняшние записи")],
-                [KeyboardButton(text="⚙️ Настройки"), KeyboardButton(text="📞 Тест уведомлений")]
-            ],
-            resize_keyboard=True
-        )
-        await message.answer(f"👋 Добро пожаловать, **Администратор**!\n\nВы можете:\n• Записаться через WebApp\n• Просматривать статистику\n• Управлять записями", reply_markup=keyboard, parse_mode='Markdown')
-    else:
-        keyboard = ReplyKeyboardMarkup(
-            keyboard=[
-                [KeyboardButton(
-                    text="📅 Записаться через WebApp",
-                    web_app=WebAppInfo(url="https://app.selesta-test.ru?tgWebAppDebug=1")
-                )]
-            ],
-            resize_keyboard=True
-        )
-        await message.answer("👋 Добро пожаловать! Запишитесь на массаж через удобный календарь, нажав на синюю кнопку **\"Записаться\"**", reply_markup=keyboard, parse_mode='Markdown')
+        await message.answer("👋 Здравствуйте! Чтобы записаться на массаж, нажмите на синюю кнопку **\"Запись\"**", parse_mode='Markdown')
 
 
 @dp.message(F.web_app_data)

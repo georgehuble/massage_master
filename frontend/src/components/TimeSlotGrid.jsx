@@ -52,15 +52,10 @@ const TimeSlotGrid = ({ slots, selectedSlot, onSlotSelect, selectedMassageType, 
     const isSelected = selectedSlot === slot;
     const isPast = time.isBefore(dayjs());
     
-    // Определяем рекомендуемые слоты (например, круглые часы)
-    const isRecommended = time.minute() === 0;
-    
     return (
       <motion.button
         key={slot}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: index * 0.05 }}
+        layout
         onClick={() => !isPast && onSlotSelect(slot)}
         disabled={isPast}
         className={`
@@ -69,13 +64,12 @@ const TimeSlotGrid = ({ slots, selectedSlot, onSlotSelect, selectedMassageType, 
             ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-105' 
             : isPast
             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            : isRecommended
-            ? 'bg-gradient-to-r from-green-100 to-blue-100 text-gray-800 border-2 border-green-300 hover:shadow-md'
             : 'bg-white text-gray-700 border border-gray-200 hover:border-blue-300 hover:shadow-md'
           }
         `}
         whileHover={!isPast ? { scale: isSelected ? 1.05 : 1.02 } : {}}
         whileTap={!isPast ? { scale: 0.98 } : {}}
+        transition={{ duration: 0.2 }}
       >
         <div className="flex flex-col items-center space-y-1">
           <span className="text-lg font-bold">
@@ -86,17 +80,14 @@ const TimeSlotGrid = ({ slots, selectedSlot, onSlotSelect, selectedMassageType, 
               до {time.add(selectedMassageType.duration, 'minute').format('HH:mm')}
             </span>
           )}
-          {isRecommended && !isSelected && (
-            <span className="text-xs bg-green-200 text-green-700 px-2 py-0.5 rounded-full">
-              Популярно
-            </span>
-          )}
+
         </div>
         
         {isSelected && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
+            transition={{ type: "spring", duration: 0.3 }}
             className="absolute -top-1 -right-1 w-6 h-6 bg-white text-blue-500 rounded-full flex items-center justify-center text-sm font-bold shadow-md"
           >
             ✓
@@ -106,7 +97,7 @@ const TimeSlotGrid = ({ slots, selectedSlot, onSlotSelect, selectedMassageType, 
     );
   };
 
-  const PeriodSection = ({ title, slots, icon, startIndex = 0 }) => {
+  const PeriodSection = ({ title, slots, icon }) => {
     if (slots.length === 0) return null;
 
     return (
@@ -118,7 +109,7 @@ const TimeSlotGrid = ({ slots, selectedSlot, onSlotSelect, selectedMassageType, 
         </div>
         <div className="grid grid-cols-3 gap-2">
           {slots.map((slot, index) => (
-            <SlotButton key={slot} slot={slot} index={startIndex + index} />
+            <SlotButton key={slot} slot={slot} index={index} />
           ))}
         </div>
       </div>
@@ -145,27 +136,26 @@ const TimeSlotGrid = ({ slots, selectedSlot, onSlotSelect, selectedMassageType, 
         <PeriodSection 
           title="Утро" 
           slots={morning} 
-          icon="🌅" 
-          startIndex={0}
+          icon="🌅"
         />
         <PeriodSection 
           title="День" 
           slots={afternoon} 
-          icon="☀️" 
-          startIndex={morning.length}
+          icon="☀️"
         />
         <PeriodSection 
           title="Вечер" 
           slots={evening} 
-          icon="🌆" 
-          startIndex={morning.length + afternoon.length}
+          icon="🌆"
         />
       </div>
 
       {selectedSlot && selectedMassageType && (
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          layout
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
           className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-200"
         >
           <div className="text-center">
