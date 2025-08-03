@@ -6,12 +6,20 @@ from fastapi import FastAPI
 import asyncio
 import json
 from datetime import datetime, timedelta
+from dotenv import load_dotenv  # Добавляем импорт
 
 from calendar_utils import get_calendar_service, create_event, get_busy_slots_for_day
+
+# Загружаем переменные из .env файла
+load_dotenv()
 
 API_TOKEN = os.getenv("BOT_TOKEN")
 CALENDAR_ID = os.getenv("CALENDAR_ID")
 ADMIN_ID = os.getenv("ADMIN_CHAT_ID")  # ID администратора для уведомлений
+
+# Проверяем, что токен загружен
+if not API_TOKEN:
+    raise ValueError("BOT_TOKEN не найден в .env файле!")
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()

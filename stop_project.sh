@@ -39,7 +39,7 @@ fi
 
 # Остановка Docker контейнеров
 echo "🐳 Останавливаю Docker контейнеры..."
-docker-compose down 2>/dev/null
+docker-compose down --remove-orphans --volumes 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "✅ Docker контейнеры остановлены"
 else
@@ -59,6 +59,32 @@ pkill -f "cloudflared tunnel" 2>/dev/null
 pkill -f "assistent_bot.py" 2>/dev/null
 pkill -f "uvicorn main:app" 2>/dev/null
 
+# Очистка Docker ресурсов
+echo "🧹 Очистка Docker ресурсов..."
+docker system prune -f 2>/dev/null
+docker volume prune -f 2>/dev/null
+docker network prune -f 2>/dev/null
+
+# Очистка временных файлов
+echo "🗑️  Очистка временных файлов..."
+rm -f .bot.pid .backend.pid .cloudflared.pid 2>/dev/null
+rm -f *.log 2>/dev/null
+rm -rf __pycache__ 2>/dev/null
+rm -rf backend/__pycache__ 2>/dev/null
+
+# Очистка кэша npm (если есть)
+if [ -d "frontend/node_modules/.cache" ]; then
+    echo "🗑️  Очистка npm кэша..."
+    rm -rf frontend/node_modules/.cache 2>/dev/null
+fi
+
+# Очистка build файлов
+if [ -d "frontend/dist" ]; then
+    echo "🗑️  Очистка build файлов..."
+    rm -rf frontend/dist 2>/dev/null
+fi
+
 echo ""
-echo "✅ Все сервисы остановлены!"
-echo "🎯 Проект Massage Master полностью выключен" 
+echo "✅ Все сервисы остановлены и очищены!"
+echo "🎯 Проект Massage Master полностью выключен"
+echo "💡 Для полной очистки Docker выполните: docker system prune -a --volumes -f" 

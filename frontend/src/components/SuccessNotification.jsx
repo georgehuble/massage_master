@@ -1,54 +1,66 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
-const SuccessNotification = ({ show, message, onClose, duration = 1000 }) => {
+const SuccessNotification = ({ show, message, onClose, duration = 2000 }) => {
+  // Не даём повторно вызывать onClose, если show уже false
+  const closedRef = React.useRef(false);
+
   React.useEffect(() => {
     if (show && duration > 0) {
+      closedRef.current = false;
       const timer = setTimeout(() => {
-        onClose();
+        if (!closedRef.current) {
+          closedRef.current = true;
+          onClose();
+        }
       }, duration);
       return () => clearTimeout(timer);
     }
   }, [show, duration, onClose]);
 
-  return (
+  const handleClose = () => {
+    if (!closedRef.current) {
+      closedRef.current = true;
+      onClose();
+    }
+  };
+
+  return createPortal(
     <AnimatePresence>
       {show && (
         <motion.div
-          initial={{ opacity: 0, y: -100, scale: 0.8 }}
+          initial={{ opacity: 0, y: -40, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -100, scale: 0.8 }}
-          transition={{ 
-            type: "spring", 
-            duration: 0.6,
-            bounce: 0.3
+          exit={{ opacity: 0, y: -40, scale: 0.95 }}
+          transition={{
+            type: "spring",
+            duration: 0.5,
+            bounce: 0.2
           }}
-          className="fixed top-4 left-4 right-4 z-50 mx-auto max-w-md"
+          className="fixed top-4 left-0 right-0 z-[9999] flex justify-center pointer-events-none px-4"
+          style={{ transform: "translateX(-50%)" }}
         >
-          <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-2xl shadow-2xl border border-green-400">
-            <div className="flex items-center space-x-3">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring" }}
-                className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center"
-              >
-                <span className="text-2xl">✅</span>
-              </motion.div>
-              <div className="flex-1">
-                <p className="font-semibold text-lg">{message}</p>
-              </div>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all"
-              >
-                <span className="text-white text-lg">×</span>
-              </button>
+          <div className="pointer-events-auto bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-3 rounded-2xl shadow-2xl border border-green-400 flex items-center space-x-3 w-full max-w-xs sm:max-w-md min-w-[180px] break-words">
+            <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-xl">✅</span>
             </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm sm:text-base break-words">{message}</p>
+            </div>
+            <button
+              onClick={handleClose}
+              className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all flex-shrink-0"
+              aria-label="Закрыть уведомление"
+              tabIndex={0}
+            >
+              <span className="text-white text-lg">×</span>
+            </button>
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 

@@ -77,10 +77,9 @@ const TimeSlotGrid = ({ slots, selectedSlot, onSlotSelect, selectedMassageType, 
           </span>
           {selectedMassageType && (
             <span className="text-xs opacity-75">
-              до {time.add(selectedMassageType.duration, 'minute').format('HH:mm')}
+              {time.format('HH:mm')}-{time.add(selectedMassageType.duration, 'minute').format('HH:mm')}
             </span>
           )}
-
         </div>
         
         {isSelected && (

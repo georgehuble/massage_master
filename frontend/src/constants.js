@@ -1,6 +1,8 @@
 // API конфигурация
 export const ADMIN_ID = import.meta.env.VITE_ADMIN_ID;
-export const API_BASE = import.meta.env.VITE_API_BASE || "/api";
+
+// Определяем API_BASE в зависимости от окружения
+export const API_BASE = "https://app.selesta-test.ru/api";
 
 // Настройки времени и бронирования
 export const BOOKING_COOLDOWN = 15000; // 15 seconds in milliseconds

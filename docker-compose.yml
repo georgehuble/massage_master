@@ -9,6 +9,9 @@ services:
       - "8000:8000"
     env_file:
       - ./.env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/google_key.json
+      - CALENDAR_ID=86c85f30ee76c7ff0761de505f603030d88602df24f0cd91dc751859117b0aab@group.calendar.google.com
     volumes:
       - ./google_key.json:/app/google_key.json:ro
     restart: unless-stopped
